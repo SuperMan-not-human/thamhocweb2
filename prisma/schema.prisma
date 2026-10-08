@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,11 +13,13 @@ datasource db {
 
 // 1. Bảng User (Tác giả / Người dùng)
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  name      String?
-  createdAt DateTime  @default(now())
-  
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  passwordHash String?   // Mật khẩu đã được hash (null nếu đăng nhập OAuth)
+  role         String    @default("user") // "admin" hoặc "user"
+  createdAt    DateTime  @default(now())
+
   posts     Post[]    // Một User có thể viết nhiều Post
   comments  Comment[] // Một User có thể tạo nhiều Comment
 }
