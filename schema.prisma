@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// 1. Bảng User (Tác giả / Người dùng)
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  passwordHash String?   // Mật khẩu đã được hash (null nếu đăng nhập OAuth)
+  role         String    @default("user") // "admin" hoặc "user"
+  createdAt    DateTime  @default(now())
+
+  posts     Post[]    // Một User có thể viết nhiều Post
+  comments  Comment[] // Một User có thể tạo nhiều Comment
+}
+
+// 2. Bảng Post (Bài viết Blog)
+model Post {
+  id        String    @id @default(cuid())
+  title     String
+  slug      String    @unique // URL thân thiện, ví dụ: /blog/bai-viet-dau-tien
+  content   String    @db.Text
+  published Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Khóa ngoại liên kết tới bảng User
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  comments  Comment[] // Một Post có thể có nhiều Comment
+}
+
+// 3. Bảng Comment (Bình luận bài viết)
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  // Khóa ngoại liên kết tới Post
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Khóa ngoại liên kết tới User
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
